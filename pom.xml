@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.github.xyz-jphil</groupId>
+    <artifactId>xyz-jphil-win11_oneocr-semantic_xhtml_viewer</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        
+        <!-- TeaVM version - latest stable -->
+        <teavm.version>0.10.2</teavm.version>
+        
+        <!-- Plugin versions -->
+        <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
+        <maven-war-plugin.version>3.4.0</maven-war-plugin.version>
+        <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
+        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+        
+        <!-- Build properties -->
+        <main.package>xyz.jphil.win11_oneocr.semantic_xhtml_viewer</main.package>
+        <main.className>OCRViewer</main.className>
+        <main.class>${main.package}.${main.className}</main.class>
+        <output_js>${main.className}.js</output_js>
+        <teavm.minifying>true</teavm.minifying>
+        <teavm.debugInformation>false</teavm.debugInformation>
+        <teavm.optimizationLevel>ADVANCED</teavm.optimizationLevel>
+    </properties>
+
+    <dependencies>
+        <!-- TeaVM Core Dependencies -->
+        <dependency>
+            <groupId>org.teavm</groupId>
+            <artifactId>teavm-core</artifactId>
+            <version>${teavm.version}</version>
+        </dependency>
+
+        <!-- TeaVM JSO (JavaScript Objects) for DOM manipulation -->
+        <dependency>
+            <groupId>org.teavm</groupId>
+            <artifactId>teavm-jso</artifactId>
+            <version>${teavm.version}</version>
+        </dependency>
+
+        <!-- TeaVM JSO APIs for browser APIs -->
+        <dependency>
+            <groupId>org.teavm</groupId>
+            <artifactId>teavm-jso-apis</artifactId>
+            <version>${teavm.version}</version>
+        </dependency>
+
+        <!-- TeaVM Platform for web compilation -->
+        <dependency>
+            <groupId>org.teavm</groupId>
+            <artifactId>teavm-platform</artifactId>
+            <version>${teavm.version}</version>
+        </dependency>
+
+        <!-- TeaVM Classlib for Java standard library support -->
+        <dependency>
+            <groupId>org.teavm</groupId>
+            <artifactId>teavm-classlib</artifactId>
+            <version>${teavm.version}</version>
+        </dependency>
+
+        <!-- TeaVM Metaprogramming for advanced features -->
+        <dependency>
+            <groupId>org.teavm</groupId>
+            <artifactId>teavm-metaprogramming-api</artifactId>
+            <version>${teavm.version}</version>
+        </dependency>
+
+        <!-- Optional: TeaVM Interop for enhanced JavaScript integration -->
+        <dependency>
+            <groupId>org.teavm</groupId>
+            <artifactId>teavm-interop</artifactId>
+            <version>${teavm.version}</version>
+        </dependency>
+
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Maven Compiler Plugin with Java 21 support -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <release>${maven.compiler.release}</release>
+                    <compilerArgs>
+                        <arg>--enable-preview</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <!-- TeaVM Maven Plugin - Core plugin for JavaScript compilation -->
+            <plugin>
+                <groupId>org.teavm</groupId>
+                <artifactId>teavm-maven-plugin</artifactId>
+                <version>${teavm.version}</version>
+                <executions>
+                    <execution>
+                        <id>web-client</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Main class to compile -->
+                            <mainClass>${main.class}</mainClass>
+                            
+                            <!-- Output directory for generated JavaScript -->
+                            <targetDirectory>${project.build.directory}/generated/js</targetDirectory>
+                            
+                            <!-- Target file name -->
+                            <targetFileName>${output_js}</targetFileName>
+                            
+                            <!-- Auto-execution settings -->
+                            <entryPointName>${main.className}__main</entryPointName> <!-- default value is main -->
+                            
+                            <!-- Compilation settings -->
+                            <minifying>${teavm.minifying}</minifying>
+                            <optimizationLevel>${teavm.optimizationLevel}</optimizationLevel>
+                            
+                            <!-- Source map generation -->
+                            <sourceMapsGenerated>true</sourceMapsGenerated>
+                            <sourceFilesCopied>true</sourceFilesCopied>
+                            
+                            <!-- Properties for TeaVM compilation -->
+                            <properties>
+                                <java.util.TimeZone.autodetect>true</java.util.TimeZone.autodetect>
+                            </properties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Surefire Plugin for running tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <argLine>--enable-preview</argLine>
+                </configuration>
+            </plugin>
+
+            <!-- Source Plugin for generating source JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>${maven-source-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Javadoc Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven-javadoc-plugin.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <additionalJOptions>
+                        <additionalJOption>--enable-preview</additionalJOption>
+                    </additionalJOptions>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Copy generated JS to target directory (production only) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-generated-js</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo message="Copying all TeaVM generated files to win11_oneocr_semantic_xhtml directory..."/>
+                                <copy todir="${project.basedir}/../win11_oneocr_semantic_xhtml" overwrite="true">
+                                    <fileset dir="${project.build.directory}/generated/js"/>
+                                </copy>
+                                <echo message="Copy completed: All files from target/generated/js"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Resources Plugin for copying web resources -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-web-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/generated/js</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/webapp</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- Development Profile -->
+        <profile>
+            <id>dev</id>
+            <properties>
+                <teavm.minifying>false</teavm.minifying>
+                <teavm.debugInformation>true</teavm.debugInformation>
+                <teavm.optimizationLevel>SIMPLE</teavm.optimizationLevel>
+            </properties>
+        </profile>
+
+        <!-- Production Profile -->
+        <profile>
+            <id>prod</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <teavm.minifying>true</teavm.minifying>
+                <teavm.debugInformation>false</teavm.debugInformation>
+                <teavm.optimizationLevel>ADVANCED</teavm.optimizationLevel>
+            </properties>
+        </profile>
+
+        <!-- Debug Profile with extensive debugging -->
+        <profile>
+            <id>debug</id>
+            <properties>
+                <teavm.minifying>false</teavm.minifying>
+                <teavm.debugInformation>true</teavm.debugInformation>
+                <teavm.optimizationLevel>SIMPLE</teavm.optimizationLevel>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.teavm</groupId>
+                        <artifactId>teavm-maven-plugin</artifactId>
+                        <configuration>
+                            <debugInformation>true</debugInformation>
+                            <sourceMapsGenerated>true</sourceMapsGenerated>
+                            <sourceFilesCopied>true</sourceFilesCopied>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
+
+    <!-- Distribution Management -->
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+</project>

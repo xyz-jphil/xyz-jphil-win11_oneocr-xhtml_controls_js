@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeaVM OCR Viewer Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-info { 
+            background: #f0f8ff; 
+            padding: 15px; 
+            border: 1px solid #4a90e2; 
+            margin-bottom: 20px; 
+        }
+        .ocr-sample {
+            border: 2px solid #ddd;
+            padding: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-info">
+        <h1>TeaVM OCR Viewer Test Page</h1>
+        <p><strong>CRITICAL:</strong> TeaVM requires manual main() call!</p>
+        <p><strong>Instructions:</strong></p>
+        <ol>
+            <li>Open browser console (F12)</li>
+            <li>Should see "DOM loaded, calling main()..." first</li>
+            <li>Then look for: <code>[TeaVM-OCRViewer]</code> messages</li>
+            <li>If you see "In main method - tea vm converts sout to console automatically"</li>
+            <li>Check for ERROR messages to see what's missing</li>
+        </ol>
+    </div>
+
+    <!-- Sample OCR content that the viewer expects -->
+    <section class="win11OneOcrPage" 
+             srcName="test-document.jpg" 
+             imgWidth="800" 
+             imgHeight="600" 
+             angle="0.0" 
+             averageOcrConfidence="0.85" 
+             ocrWordsCount="25" 
+             ocrSegmentsCount="3">
+        
+        <div class="ocrContent">
+            <segment>
+                <w b="100,50,150,75,150,85,100,85" p="0.95" i="0">Sample</w>
+                <w b="160,50,200,75,200,85,160,85" p="0.92" i="1">OCR</w>
+                <w b="210,50,250,75,250,85,210,85" p="0.88" i="2">Text</w>
+            </segment>
+            
+            <segment>
+                <w b="100,100,140,125,140,135,100,135" p="0.90" i="3">Line</w>
+                <w b="150,100,180,125,180,135,150,135" p="0.87" i="4">Two</w>
+                <w b="190,100,230,125,230,135,190,135" p="0.93" i="5">Content</w>
+            </segment>
+            
+            <segment>
+                <w b="100,150,130,175,130,185,100,185" p="0.75" i="6">Final</w>
+                <w b="140,150,170,175,170,185,140,185" p="0.82" i="7">Line</w>
+            </segment>
+        </div>
+    </section>
+
+    <!-- Load TeaVM generated script -->
+    <script src="ocr-viewer.js"></script>
+    
+    <!-- TeaVM requires manual main() call -->
+    <script>
+        // Call main function after DOM is loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM loaded, calling main()...');
+                if (typeof main === 'function') {
+                    main([]);
+                } else {
+                    console.error('main() function not found in generated JavaScript!');
+                    console.log('Available global functions:', Object.keys(window).filter(k => typeof window[k] === 'function'));
+                }
+            });
+        } else {
+            console.log('DOM ready, calling main() immediately...');
+            if (typeof main === 'function') {
+                main([]);
+            } else {
+                console.error('main() function not found in generated JavaScript!');
+                console.log('Available global functions:', Object.keys(window).filter(k => typeof window[k] === 'function'));
+            }
+        }
+    </script>
+</body>
+</html>
