@@ -1,4 +1,4 @@
-package xyz.jphil.win11_oneocr.semantic_xhtml_viewer;
+package xyz.jphil.win11_oneocr.xhtml_controls_js;
 
 import org.teavm.jso.JSBody;
 //import org.teavm.jso.dom.html.*;
@@ -21,7 +21,7 @@ import org.teavm.jso.dom.html.HTMLInputElement;
  * OCR XHTML Interactive Viewer - TeaVM Implementation
  * Converted from JavaScript using modern Java features (JDK 21 compatible with TeaVM)
  */
-public class OCRViewer {
+public class XHtmlOcrControls {
     
     // Debug flag - set to false to disable verbose logging
     private static final boolean VERBOSE_DEBUG = true;
@@ -190,7 +190,7 @@ public class OCRViewer {
     
     public static void main(String[] args) {
         debug("main() called - starting TeaVM OCR Viewer");
-        OCRViewer viewer = new OCRViewer();
+        XHtmlOcrControls viewer = new XHtmlOcrControls();
         
         if (isDocumentReady()) {
             debug("Document is ready, initializing immediately");

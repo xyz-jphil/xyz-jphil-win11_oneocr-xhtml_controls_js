@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.xyz-jphil</groupId>
-    <artifactId>xyz-jphil-win11_oneocr-semantic_xhtml_viewer</artifactId>
+    <artifactId>xyz-jphil-win11_oneocr-xhtml_controls_js</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
 
@@ -27,8 +27,8 @@
         <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
         
         <!-- Build properties -->
-        <main.package>xyz.jphil.win11_oneocr.semantic_xhtml_viewer</main.package>
-        <main.className>OCRViewer</main.className>
+        <main.package>xyz.jphil.win11_oneocr.xhtml_controls_js</main.package>
+        <main.className>XHtmlOcrControls</main.className>
         <main.class>${main.package}.${main.className}</main.class>
         <output_js>${main.className}.js</output_js>
         <teavm.minifying>true</teavm.minifying>
