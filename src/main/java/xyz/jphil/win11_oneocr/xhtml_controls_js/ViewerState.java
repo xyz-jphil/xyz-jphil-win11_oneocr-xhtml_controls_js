@@ -12,7 +12,14 @@ public record ViewerState(
     boolean initialized
 ) {
     public static final ViewerState DEFAULT = new ViewerState(
-        false, true, true, false, true, true, true, false
+        false,  // showLineBoxes - OFF for clean initial experience
+        false,  // showWordBoxes - OFF for clean initial experience  
+        true,   // showXHTMLText - Keep original XHTML content visible
+        false,  // showSVGText - OFF for clean initial experience
+        false,  // enableHoverControls - OFF for clean initial experience
+        false,  // showSVGSection - OFF for clean initial experience
+        false,  // showSVGBackground - OFF for clean initial experience
+        false   // initialized
     );
 
     public ViewerState withInitialized(boolean initialized) {

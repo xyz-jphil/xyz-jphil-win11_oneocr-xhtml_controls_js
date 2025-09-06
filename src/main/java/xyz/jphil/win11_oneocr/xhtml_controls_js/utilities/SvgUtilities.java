@@ -1,8 +1,10 @@
-package xyz.jphil.win11_oneocr.xhtml_controls_js;
+package xyz.jphil.win11_oneocr.xhtml_controls_js.utilities;
 
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.html.HTMLDocument;
 import org.teavm.jso.dom.xml.Element;
+import xyz.jphil.win11_oneocr.xhtml_controls_js.BoundingBox;
+import xyz.jphil.win11_oneocr.xhtml_controls_js.WordData;
 
 /**
  * Provides utilities for creating SVG elements and text positioning.

@@ -1,6 +1,8 @@
-package xyz.jphil.win11_oneocr.xhtml_controls_js;
+package xyz.jphil.win11_oneocr.xhtml_controls_js.utilities;
 
 import org.teavm.jso.JSBody;
+import xyz.jphil.win11_oneocr.xhtml_controls_js.LineData;
+import xyz.jphil.win11_oneocr.xhtml_controls_js.WordData;
 import java.util.List;
 import java.util.stream.Collectors;
 

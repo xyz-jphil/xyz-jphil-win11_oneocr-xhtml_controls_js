@@ -1,5 +1,7 @@
-package xyz.jphil.win11_oneocr.xhtml_controls_js;
+package xyz.jphil.win11_oneocr.xhtml_controls_js.utilities;
 
+import xyz.jphil.win11_oneocr.xhtml_controls_js.OCRData;
+import xyz.jphil.win11_oneocr.xhtml_controls_js.Metadata;
 import java.util.List;
 import java.util.Optional;
 

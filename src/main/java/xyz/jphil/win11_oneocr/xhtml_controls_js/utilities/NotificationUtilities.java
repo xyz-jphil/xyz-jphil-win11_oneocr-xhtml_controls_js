@@ -1,9 +1,10 @@
-package xyz.jphil.win11_oneocr.xhtml_controls_js;
+package xyz.jphil.win11_oneocr.xhtml_controls_js.utilities;
 
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.events.MouseEvent;
 import org.teavm.jso.dom.html.HTMLDocument;
 import org.teavm.jso.dom.html.HTMLElement;
+import xyz.jphil.win11_oneocr.xhtml_controls_js.WordData;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -25,18 +26,16 @@ public final class NotificationUtilities {
     public static void showNotification(String message) {
         var notification = (HTMLElement) getDocument().createElement("div");
         
-        var notificationStyle = """
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 4px;
-            z-index: 1000;
-            font-size: 12px;
-            """;
+        var notificationStyle = "position: fixed; " +
+                               "top: 50%; " +
+                               "left: 50%; " +
+                               "transform: translate(-50%, -50%); " +
+                               "background: rgba(0, 0, 0, 0.8); " +
+                               "color: white; " +
+                               "padding: 10px 20px; " +
+                               "border-radius: 4px; " +
+                               "z-index: 1000; " +
+                               "font-size: 12px;";
         notification.getStyle().setCssText(notificationStyle);
         notification.setTextContent(message);
         
@@ -62,18 +61,16 @@ public final class NotificationUtilities {
     public static void showSVGWordDetails(WordData word, MouseEvent event) {
         var popup = (HTMLElement) getDocument().createElement("div");
         
-        var popupStyle = """
-            position: fixed;
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            font-size: 12px;
-            font-family: monospace;
-            z-index: 1000;
-            max-width: 250px;
-            pointer-events: none;
-            """;
+        var popupStyle = "position: fixed; " +
+                        "background: rgba(0, 0, 0, 0.9); " +
+                        "color: white; " +
+                        "padding: 10px 15px; " +
+                        "border-radius: 5px; " +
+                        "font-size: 12px; " +
+                        "font-family: monospace; " +
+                        "z-index: 1000; " +
+                        "max-width: 250px; " +
+                        "pointer-events: none;";
         popup.getStyle().setCssText(popupStyle);
         
         var popupContent = word.boundingBox()

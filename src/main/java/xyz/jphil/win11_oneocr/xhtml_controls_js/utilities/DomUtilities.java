@@ -1,4 +1,4 @@
-package xyz.jphil.win11_oneocr.xhtml_controls_js;
+package xyz.jphil.win11_oneocr.xhtml_controls_js.utilities;
 
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.html.HTMLDocument;

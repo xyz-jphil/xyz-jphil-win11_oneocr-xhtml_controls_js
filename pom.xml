@@ -106,9 +106,6 @@
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
                     <release>${maven.compiler.release}</release>
-                    <compilerArgs>
-                        <arg>--enable-preview</arg>
-                    </compilerArgs>
                 </configuration>
             </plugin>
 
@@ -160,7 +157,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
-                    <argLine>--enable-preview</argLine>
+                    <!-- Removed enable-preview for compatibility -->
                 </configuration>
             </plugin>
 
@@ -186,9 +183,7 @@
                 <version>${maven-javadoc-plugin.version}</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
-                    <additionalJOptions>
-                        <additionalJOption>--enable-preview</additionalJOption>
-                    </additionalJOptions>
+                    <!-- Removed enable-preview for compatibility -->
                 </configuration>
                 <executions>
                     <execution>

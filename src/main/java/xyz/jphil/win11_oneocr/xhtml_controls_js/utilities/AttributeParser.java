@@ -1,6 +1,7 @@
-package xyz.jphil.win11_oneocr.xhtml_controls_js;
+package xyz.jphil.win11_oneocr.xhtml_controls_js.utilities;
 
 import org.teavm.jso.dom.xml.Element;
+import xyz.jphil.win11_oneocr.xhtml_controls_js.BoundingBox;
 
 import java.util.Arrays;
 import java.util.Optional;
