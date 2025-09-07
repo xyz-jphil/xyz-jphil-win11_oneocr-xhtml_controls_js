@@ -17,10 +17,10 @@ public record BoundingBox(
     }
 
     public String toPolygonPoints() {
-        // Ensure proper polygon closure by setting x4=x1 for proper rectangle (matching old JS logic)
+        // Proper polygon using correct x4,y4 coordinates (API bug now fixed)
         return Math.round(x1*10)/10.0 + "," + Math.round(y1*10)/10.0 + " " +
                Math.round(x2*10)/10.0 + "," + Math.round(y2*10)/10.0 + " " +
                Math.round(x3*10)/10.0 + "," + Math.round(y3*10)/10.0 + " " +
-               Math.round(x1*10)/10.0 + "," + Math.round(y4*10)/10.0; // x4=x1 for proper closure
+               Math.round(x4*10)/10.0 + "," + Math.round(y4*10)/10.0; // Now using correct x4,y4
     }
 }

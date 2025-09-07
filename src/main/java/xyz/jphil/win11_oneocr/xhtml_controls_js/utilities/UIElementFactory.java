@@ -55,38 +55,47 @@ public final class UIElementFactory {
         controlBar.setClassName("control-bar sticky-pinned");
         controlBar.setId("top-control-bar");
         
-        // Sticky control bar styles
+        // Sticky control bar styles - full width
         var barStyle = "position: sticky; " +
                       "top: 0; " +
+                      "left: 0; " +
+                      "right: 0; " +
+                      "width: 100%; " +
                       "z-index: 1000; " +
                       "background: linear-gradient(135deg, #2c3e50, #34495e); " +
                       "color: white; " +
-                      "padding: 8px 16px; " +
+                      "padding: 12px 20px; " +
                       "border-bottom: 2px solid #3498db; " +
                       "box-shadow: 0 2px 8px rgba(0,0,0,0.3); " +
                       "display: flex; " +
-                      "flex-wrap: wrap; " +
-                      "align-items: center; " +
-                      "gap: 12px; " +
+                      "flex-direction: column; " +
+                      "gap: 8px; " +
                       "font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; " +
                       "font-size: 13px; " +
-                      "transition: all 0.3s ease;";
+                      "transition: all 0.3s ease; " +
+                      "box-sizing: border-box;";
         controlBar.getStyle().setCssText(barStyle);
         
-        // Create pin/unpin toggle button
-        var pinToggle = createPinToggleButton();
-        controlBar.appendChild(pinToggle);
+        // Create single row with pin toggle + controls
+        var controlsRow = (HTMLElement) getDocument().createElement("div");
+        controlsRow.getStyle().setCssText("display: flex; flex-wrap: wrap; align-items: center; gap: 12px; width: 100%;");
         
-        // Add separator
+        // Add pin toggle as first item in the controls row
+        var pinToggle = createPinToggleButton();
+        controlsRow.appendChild(pinToggle);
+        
+        // Add a small separator after pin toggle
         var separator = (HTMLElement) getDocument().createElement("div");
         separator.getStyle().setCssText("width: 1px; height: 20px; background: rgba(255,255,255,0.3); margin: 0 4px;");
-        controlBar.appendChild(separator);
+        controlsRow.appendChild(separator);
         
         // Add control groups in responsive layout
         controls.forEach(config -> {
             var controlGroup = createCompactControlGroup(config);
-            controlBar.appendChild(controlGroup);
+            controlsRow.appendChild(controlGroup);
         });
+        
+        controlBar.appendChild(controlsRow);
         
         return controlBar;
     }
@@ -97,7 +106,7 @@ public final class UIElementFactory {
     private static HTMLElement createPinToggleButton() {
         var pinButton = (HTMLElement) getDocument().createElement("button");
         pinButton.setId("pin-toggle-btn");
-        pinButton.setInnerHTML("📌"); // Pin icon
+        pinButton.setInnerHTML("●"); // Filled circle for pinned/sticky
         pinButton.setTitle("Click to unpin (scroll with content)");
         
         var buttonStyle = "background: rgba(52, 152, 219, 0.2); " +
@@ -135,15 +144,15 @@ public final class UIElementFactory {
                 controlBar.getClassList().remove("sticky-pinned");
                 controlBar.getClassList().add("sticky-unpinned");
                 controlBar.getStyle().setProperty("position", "static");
-                pinButton.setInnerHTML("📍"); // Different icon for unpinned
+                pinButton.setInnerHTML("○"); // Hollow circle for unpinned
                 pinButton.setTitle("Click to pin (stay at top while scrolling)");
-                pinButton.getStyle().setProperty("color", "#e74c3c");
+                pinButton.getStyle().setProperty("color", "#f39c12"); // Orange for unpinned
             } else {
                 // Pin: make it stick to top
                 controlBar.getClassList().remove("sticky-unpinned");
                 controlBar.getClassList().add("sticky-pinned");
                 controlBar.getStyle().setProperty("position", "sticky");
-                pinButton.setInnerHTML("📌"); // Pin icon
+                pinButton.setInnerHTML("●"); // Filled circle for pinned/sticky
                 pinButton.setTitle("Click to unpin (scroll with content)");
                 pinButton.getStyle().setProperty("color", "#3498db");
             }

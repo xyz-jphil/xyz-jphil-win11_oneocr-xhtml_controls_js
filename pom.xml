@@ -7,7 +7,7 @@
     <groupId>io.github.xyz-jphil</groupId>
     <artifactId>xyz-jphil-win11_oneocr-xhtml_controls_js</artifactId>
     <version>1.0</version>
-    <packaging>jar</packaging>
+    <!-- <packaging>jar</packaging> JAR generation commented out - only need JS output -->
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -21,10 +21,6 @@
         
         <!-- Plugin versions -->
         <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
-        <maven-war-plugin.version>3.4.0</maven-war-plugin.version>
-        <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
-        <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
-        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
         
         <!-- Build properties -->
         <main.package>xyz.jphil.win11_oneocr.xhtml_controls_js</main.package>
@@ -86,13 +82,7 @@
             <version>${teavm.version}</version>
         </dependency>
 
-        <!-- Test Dependencies -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.10.1</version>
-            <scope>test</scope>
-        </dependency>
+        <!-- Test Dependencies removed - not needed for JS-only build -->
     </dependencies>
 
     <build>
@@ -151,49 +141,26 @@
                 </executions>
             </plugin>
 
-            <!-- Surefire Plugin for running tests -->
+            <!-- JAR generation plugins removed - only need JS output -->
+            <!-- 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
-                <configuration>
-                    <!-- Removed enable-preview for compatibility -->
-                </configuration>
+                <version>3.2.5</version>
             </plugin>
 
-            <!-- Source Plugin for generating source JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>${maven-source-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <version>3.3.0</version>
             </plugin>
 
-            <!-- Javadoc Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${maven-javadoc-plugin.version}</version>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <!-- Removed enable-preview for compatibility -->
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <version>3.6.3</version>
             </plugin>
+            -->
 
             <!-- Copy generated JS to target directory (production only) -->
             <plugin>
@@ -296,7 +263,8 @@
 
     </profiles>
 
-    <!-- Distribution Management -->
+    <!-- Distribution Management removed - not needed for JS-only build -->
+    <!--
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
@@ -307,5 +275,6 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
+    -->
 
 </project>

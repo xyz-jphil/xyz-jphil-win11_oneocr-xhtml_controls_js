@@ -9,7 +9,6 @@ import org.teavm.jso.dom.xml.Element;
 import org.teavm.jso.browser.Window;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 import org.teavm.jso.dom.html.HTMLDocument;
 import org.teavm.jso.dom.html.HTMLButtonElement;
@@ -17,7 +16,7 @@ import org.teavm.jso.dom.html.HTMLElement;
 import org.teavm.jso.dom.html.HTMLInputElement;
 
 // Static imports for utility methods - organized in utilities sub-package
-import static xyz.jphil.win11_oneocr.xhtml_controls_js.utilities.AttributeParser.*;
+import org.teavm.jso.dom.xml.NodeList;
 import static xyz.jphil.win11_oneocr.xhtml_controls_js.utilities.DomUtilities.*;
 import static xyz.jphil.win11_oneocr.xhtml_controls_js.utilities.OCRDataFactory.*;
 import static xyz.jphil.win11_oneocr.xhtml_controls_js.utilities.SvgUtilities.*;
@@ -84,44 +83,116 @@ public class XHtmlOcrControls {
         isMultiPageDocument = pageManager.isMultiPage();
         debug("Document type: " + (isMultiPageDocument ? "Multi-page" : "Single-page"));
         
-        // Clean up any existing content
-        debug("Cleaning up DOM...");
-        cleanupDOM();
+        var pageCount = pageManager.getPageCount();
         
-        // Process all pages
-        debug("Processing pages...");
-        pageManager.processAllPages((pageElement, pageNumber, isMultiPage) -> {
-            var pageData = pageProcessor.processPage(pageElement, pageNumber, isMultiPage);
-            allPagesData.add(pageData);
-        });
-        
-        // Create document-level controls
-        debug("Creating document controls...");
-        createDocumentControls();
-        
-        // Create page-level SVG sections
-        debug("Creating SVG sections...");
-        createAllSVGSections();
-        
-        // Bind global event handlers
-        debug("Binding event handlers...");
-        bindDocumentEventHandlers();
-        
-        // Update display
-        debug("Updating display...");
-        updateDisplay();
-        
-        state = state.withInitialized(true);
-        debug("Multi-page OCR Viewer initialized successfully!");
-        debug("Processed " + allPagesData.size() + " pages");
-        
-        // Debug export for first page
-        if (!allPagesData.isEmpty()) {
-            debug("Exporting debug info for first page...");
-            exportPageDebugInfo(0);
+        // Show loading indicator for large documents during initialization
+        if (pageCount > 50) {
+            showLoadingIndicator("Loading " + pageCount + " pages...");
+            
+            // Small delay to ensure loading indicator appears before heavy processing
+            org.teavm.jso.browser.Window.setTimeout(() -> {
+                performInitialization(); // This will handle hiding indicator when complete
+            }, 50);
+        } else {
+            // Small documents - initialize immediately
+            performInitialization();
+            debug("initializeOCRViewer() completed");
         }
-        
-        debug("initializeOCRViewer() completed");
+    }
+    
+    /**
+     * Perform the actual initialization work (extracted for loading indicator support).
+     */
+    private void performInitialization() {
+        performInitializationSteps(0);
+    }
+    
+    /**
+     * Perform initialization in steps with progress updates.
+     */
+    private void performInitializationSteps(int step) {
+        switch (step) {
+            case 0:
+                updateProgress(10);
+                debug("Cleaning up DOM...");
+                cleanupDOM();
+                
+                org.teavm.jso.browser.Window.setTimeout(() -> performInitializationSteps(1), 20);
+                break;
+                
+            case 1:
+                updateProgress(20);
+                debug("Processing pages...");
+                pageManager.processAllPages((pageElement, pageNumber, isMultiPage) -> {
+                    var pageData = pageProcessor.processPage(pageElement, pageNumber, isMultiPage);
+                    allPagesData.add(pageData);
+                });
+                
+                org.teavm.jso.browser.Window.setTimeout(() -> performInitializationSteps(2), 20);
+                break;
+                
+            case 2:
+                updateProgress(40);
+                debug("Setting up HTML sections...");
+                setupHTMLSection();
+                
+                org.teavm.jso.browser.Window.setTimeout(() -> performInitializationSteps(3), 20);
+                break;
+                
+            case 3:
+                updateProgress(60);
+                debug("Creating document controls...");
+                createDocumentControls();
+                
+                org.teavm.jso.browser.Window.setTimeout(() -> performInitializationSteps(4), 20);
+                break;
+                
+            case 4:
+                updateProgress(75);
+                debug("Creating SVG sections...");
+                createAllSVGSections();
+                
+                org.teavm.jso.browser.Window.setTimeout(() -> performInitializationSteps(5), 20);
+                break;
+                
+            case 5:
+                updateProgress(85);
+                debug("Binding event handlers...");
+                bindDocumentEventHandlers();
+                
+                org.teavm.jso.browser.Window.setTimeout(() -> performInitializationSteps(6), 20);
+                break;
+                
+            case 6:
+                updateProgress(95);
+                debug("Updating display...");
+                // For initial display, use immediate processing (all toggles are OFF)
+                var sections = document.querySelectorAll("section.win11OneOcrPage");
+                for (int pageIndex = 0; pageIndex < sections.getLength(); pageIndex++) {
+                    var section = (HTMLElement) sections.get(pageIndex);
+                    updateDisplayForPage(section, pageIndex + 1);
+                }
+                
+                org.teavm.jso.browser.Window.setTimeout(() -> performInitializationSteps(7), 20);
+                break;
+                
+            case 7:
+                updateProgress(100);
+                state = state.withInitialized(true);
+                debug("Multi-page OCR Viewer initialized successfully!");
+                debug("Processed " + allPagesData.size() + " pages");
+                
+                // Debug export for first page
+                if (!allPagesData.isEmpty()) {
+                    debug("Exporting debug info for first page...");
+                    exportPageDebugInfo(0);
+                }
+                
+                // Hide loading indicator after initialization completes
+                hideLoadingIndicator();
+                debug("initializeOCRViewer() completed");
+                break;
+        }
     }
     
     // Old single-page methods removed - now handled by OCRPageProcessor
@@ -147,26 +218,172 @@ public class XHtmlOcrControls {
             new UIElementFactory.ControlConfig("toggle-svg-background", "SVG Background", false)
         );
         
-        // Create sticky control bar at top
+        // Create sticky control bar at top (without metadata)
         var stickyControlBar = UIElementFactory.createStickyControlBar(globalControls);
         document.getBody().insertBefore(stickyControlBar, document.getBody().getFirstChild());
         
-        // Add document info panel - works for both single and multi-page
-        var docInfo = pageManager.getDocumentMetadata();
-        var infoPanel = (HTMLElement) document.createElement("div");
-        infoPanel.setClassName("document-info-panel");
-        infoPanel.setInnerHTML("<div style='padding: 8px 16px; background: #f8f9fa; border-bottom: 1px solid #dee2e6; font-size: 13px;'>" +
-                              "<strong>" + docInfo.pageCount() + " pages</strong> | " + 
-                              docInfo.totalWords() + " words | " + 
-                              Math.round(docInfo.averageConfidence() * 1000.0) / 10.0 + "% avg confidence</div>");
+        // Create separate metadata section below control bar
+        createMetadataSection();
+    }
+    
+    /**
+     * Create a clean metadata section below the navigation bar.
+     */
+    private void createMetadataSection() {
+        var metadataSection = (HTMLElement) document.createElement("div");
+        metadataSection.setId("metadata-section");
+        metadataSection.setClassName("metadata-section");
         
-        // Insert info panel after control bar
+        // Style the metadata section
+        var sectionStyle = "background: #f8f9fa; " +
+                          "border-bottom: 1px solid #dee2e6; " +
+                          "padding: 12px 20px; " +
+                          "display: flex; " +
+                          "justify-content: space-between; " +
+                          "align-items: center; " +
+                          "font-size: 13px; " +
+                          "color: #495057; " +
+                          "font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;";
+        metadataSection.getStyle().setCssText(sectionStyle);
+        
+        var docInfo = pageManager.getDocumentMetadata();
+        
+        // Check if we have valid metadata - hide section if no meaningful data
+        boolean hasValidData = docInfo.totalWords() > 0 || docInfo.averageConfidence() > 0.0;
+        if (!hasValidData) {
+            debug("No valid metadata found - hiding metadata section");
+            return; // Don't create metadata section if no data
+        }
+        
+        // Left side - document stats
+        var leftInfo = (HTMLElement) document.createElement("div");
+        leftInfo.getStyle().setCssText("display: flex; align-items: center; gap: 20px;");
+        
+        // Basic stats
+        var statsSpan = (HTMLElement) document.createElement("span");
+        statsSpan.setInnerHTML("📄 <strong>" + docInfo.pageCount() + "</strong> pages • " + 
+                              "🔤 <strong>" + docInfo.totalWords() + "</strong> words • " + 
+                              "🎯 <strong>" + Math.round(docInfo.averageConfidence() * 1000.0) / 10.0 + "%</strong> confidence");
+        leftInfo.appendChild(statsSpan);
+        
+        // Right side - timestamp
+        var rightInfo = (HTMLElement) document.createElement("div");
+        rightInfo.getStyle().setCssText("display: flex; align-items: center; gap: 15px; color: #6c757d;");
+        
+        // OCR processing timestamp from XHTML meta tags
+        var ocrDate = parseMetaContent("date", "");
+        if (!ocrDate.isEmpty()) {
+            var timestampSpan = (HTMLElement) document.createElement("span");
+            timestampSpan.getStyle().setCssText("font-family: monospace; font-size: 12px;");
+            timestampSpan.setTextContent("🕒 OCR: " + formatOCRTimestamp(ocrDate));
+            rightInfo.appendChild(timestampSpan);
+        }
+        
+        metadataSection.appendChild(leftInfo);
+        metadataSection.appendChild(rightInfo);
+        
+        // Insert after control bar
         var controlBar = document.getElementById("top-control-bar");
         if (controlBar != null && controlBar.getNextSibling() != null) {
-            document.getBody().insertBefore(infoPanel, controlBar.getNextSibling());
+            document.getBody().insertBefore(metadataSection, controlBar.getNextSibling());
+        } else if (controlBar != null) {
+            document.getBody().appendChild(metadataSection);
         } else {
-            document.getBody().appendChild(infoPanel);
+            // Fallback: insert at beginning of body
+            document.getBody().insertBefore(metadataSection, document.getBody().getFirstChild());
         }
+    }
+    
+    private String extractFilename(String fullPath) {
+        if (fullPath == null || fullPath.isEmpty()) return "Unknown";
+        var lastSlash = Math.max(fullPath.lastIndexOf('/'), fullPath.lastIndexOf('\\'));
+        return lastSlash >= 0 ? fullPath.substring(lastSlash + 1) : fullPath;
+    }
+    
+    /**
+     * Parse string meta content from document.
+     */
+    private String parseMetaContent(String metaName, String defaultValue) {
+        var meta = document.querySelector("meta[name=\"" + metaName + "\"]");
+        if (meta != null) {
+            var content = meta.getAttribute("content");
+            return content != null ? content : defaultValue;
+        }
+        return defaultValue;
+    }
+    
+    /**
+     * Format OCR timestamp from ISO format to readable format.
+     * Input: "2025-08-24T23:09:32.087421Z"
+     * Output: "Aug 24, 23:09"
+     */
+    private String formatOCRTimestamp(String isoTimestamp) {
+        try {
+            // Extract date and time parts from ISO format
+            // Format: 2025-08-24T23:09:32.087421Z
+            if (isoTimestamp.length() >= 16 && isoTimestamp.contains("T")) {
+                var datePart = isoTimestamp.substring(0, 10); // 2025-08-24
+                var timePart = isoTimestamp.substring(11, 16); // 23:09
+                
+                // Extract month and day
+                var parts = datePart.split("-");
+                if (parts.length >= 3) {
+                    var month = Integer.parseInt(parts[1]);
+                    var day = Integer.parseInt(parts[2]);
+                    
+                    String[] monthNames = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+                    
+                    if (month >= 1 && month <= 12) {
+                        return monthNames[month - 1] + " " + day + ", " + timePart;
+                    }
+                }
+            }
+            
+            // Fallback - just show the first part
+            return isoTimestamp.substring(0, Math.min(16, isoTimestamp.length()));
+        } catch (Exception e) {
+            // If parsing fails, return truncated original
+            return isoTimestamp.length() > 20 ? isoTimestamp.substring(0, 20) : isoTimestamp;
+        }
+    }
+    
+    /**
+     * Add a small confidence badge to each page showing per-page confidence.
+     * Helps users identify pages with low confidence quickly.
+     */
+    private void addPageConfidenceBadge(HTMLElement pageSection, double confidence, int pageNumber) {
+        // Only show badge if there's valid confidence data
+        if (confidence <= 0.0) {
+            return;
+        }
+        
+        var badge = (HTMLElement) document.createElement("div");
+        badge.setClassName("page-confidence-badge");
+        
+        // Convert confidence to percentage and determine color
+        var confidencePercent = Math.round(confidence * 100.0);
+        var badgeClass = confidencePercent >= 80 ? "high" : (confidencePercent >= 50 ? "med" : "low");
+        
+        // Position badge to avoid overlap with copy button (which is at top: 5px; right: 5px)
+        var badgeStyle = "position: absolute; " +
+                        "top: 2px; " +
+                        "left: 2px; " +  // Move to left side to avoid copy button
+                        "background: " + (badgeClass.equals("high") ? "#28a745" : 
+                                         (badgeClass.equals("med") ? "#ffc107" : "#dc3545")) + "; " +
+                        "color: white; " +
+                        "padding: 4px 8px; " +
+                        "border-radius: 12px; " +
+                        "font-size: 11px; " +
+                        "font-weight: bold; " +
+                        "z-index: 40; " +  // Higher than copy button (z-index: 30)
+                        "box-shadow: 0 2px 4px rgba(0,0,0,0.2);";
+        
+        badge.getStyle().setCssText(badgeStyle);
+        badge.setTextContent("🎯 " + confidencePercent + "%");
+        badge.setTitle("Page " + pageNumber + " confidence: " + confidencePercent + "%");
+        
+        pageSection.appendChild(badge);
     }
     
     private void createAllSVGSections() {
@@ -263,6 +480,9 @@ public class XHtmlOcrControls {
         if (pageIndex < allPagesData.size()) {
             var pageData = allPagesData.get(pageIndex);
             pageData.lines().forEach(line -> applyConfidenceClassesForPage(line, pageSection));
+            
+            // Add per-page confidence badge (nice to have feature)
+            addPageConfidenceBadge(pageSection, pageData.metadata().averageConfidence(), pageNumber);
         }
         
         // Add hover controls for this page
@@ -535,12 +755,138 @@ public class XHtmlOcrControls {
         var sections = document.querySelectorAll("section.win11OneOcrPage");
         debug("Found " + sections.getLength() + " page sections to update");
         
-        for (int pageIndex = 0; pageIndex < sections.getLength(); pageIndex++) {
-            var section = (HTMLElement) sections.get(pageIndex);
-            updateDisplayForPage(section, pageIndex + 1);
+        // Show loading indicator for large documents
+        if (sections.getLength() > 50) {
+            showLoadingIndicator("Processing " + sections.getLength() + " pages...");
+            
+            // Small delay to ensure loading indicator appears before processing
+            org.teavm.jso.browser.Window.setTimeout(() -> {
+                processAllPagesWithProgress(sections, () -> {
+                    hideLoadingIndicator();
+                    debug("updateDisplay() completed for all pages");
+                });
+            }, 50); // 50ms delay
+        } else {
+            // Small documents - process immediately
+            for (int pageIndex = 0; pageIndex < sections.getLength(); pageIndex++) {
+                var section = (HTMLElement) sections.get(pageIndex);
+                updateDisplayForPage(section, pageIndex + 1);
+            }
+            debug("updateDisplay() completed for all pages");
+        }
+    }
+    
+    /**
+     * Process all pages (used with loading indicator).
+     */
+    private void processAllPages(NodeList sections) {
+        processPagesBatch(sections, 0, sections.getLength(), null);
+    }
+    
+    /**
+     * Process all pages with progress updates and completion callback.
+     */
+    private void processAllPagesWithProgress(NodeList sections, Runnable onComplete) {
+        processPagesBatch(sections, 0, sections.getLength(), onComplete);
+    }
+    
+    /**
+     * Process pages in small batches with progress updates.
+     */
+    private void processPagesBatch(NodeList sections, int startIndex, int totalPages, Runnable onComplete) {
+        final int batchSize = 10; // Process 10 pages per batch
+        int endIndex = Math.min(startIndex + batchSize, totalPages);
+        
+        // Process current batch
+        for (int i = startIndex; i < endIndex; i++) {
+            var section = (HTMLElement) sections.get(i);
+            updateDisplayForPage(section, i + 1);
         }
         
-        debug("updateDisplay() completed for all pages");
+        // Update progress
+        var progress = Math.round((endIndex * 100.0) / totalPages);
+        updateProgress(progress);
+        
+        // Continue with next batch or finish
+        if (endIndex < totalPages) {
+            org.teavm.jso.browser.Window.setTimeout(() -> {
+                processPagesBatch(sections, endIndex, totalPages, onComplete);
+            }, 1); // Very small delay to allow UI update
+        } else if (onComplete != null) {
+            onComplete.run();
+        }
+    }
+    
+    /**
+     * Show loading indicator with circular progress.
+     */
+    private void showLoadingIndicator(String message) {
+        var existing = document.getElementById("loading-indicator");
+        if (existing != null) {
+            var messageEl = existing.querySelector(".loading-message");
+            if (messageEl != null) {
+                messageEl.setTextContent(message);
+            }
+            return;
+        }
+        
+        var indicator = (HTMLElement) document.createElement("div");
+        indicator.setId("loading-indicator");
+        
+        // Create circular progress SVG
+        var progressHtml = "<div style='display: flex; align-items: center; gap: 12px;'>" +
+                          "<svg width='32' height='32' style='transform: rotate(-90deg);'>" +
+                          "<circle cx='16' cy='16' r='12' fill='none' stroke='rgba(255,255,255,0.3)' stroke-width='3'/>" +
+                          "<circle id='progress-circle' cx='16' cy='16' r='12' fill='none' stroke='#4CAF50' stroke-width='3' " +
+                          "stroke-dasharray='75.4' stroke-dashoffset='75.4' stroke-linecap='round'/>" +
+                          "</svg>" +
+                          "<div style='display: flex; flex-direction: column; align-items: flex-start;'>" +
+                          "<div class='loading-message' style='font-size: 14px; font-weight: 500;'>" + message + "</div>" +
+                          "<div id='progress-text' style='font-size: 12px; opacity: 0.8; margin-top: 2px;'>0%</div>" +
+                          "</div>" +
+                          "</div>";
+        
+        indicator.setInnerHTML(progressHtml);
+        
+        var style = "position: fixed; " +
+                   "top: 50%; " +
+                   "left: 50%; " +
+                   "transform: translate(-50%, -50%); " +
+                   "background: rgba(0, 0, 0, 0.85); " +
+                   "color: white; " +
+                   "padding: 20px 24px; " +
+                   "border-radius: 8px; " +
+                   "z-index: 9999; " +
+                   "font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; " +
+                   "box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);";
+        
+        indicator.getStyle().setCssText(style);
+        document.getBody().appendChild(indicator);
+    }
+    
+    /**
+     * Update progress indicator.
+     */
+    private void updateProgress(long percentage) {
+        var progressCircle = document.getElementById("progress-circle");
+        var progressText = document.getElementById("progress-text");
+        
+        if (progressCircle != null && progressText != null) {
+            // Calculate stroke-dashoffset for circular progress (circumference = 75.4)
+            var offset = 75.4 - (75.4 * percentage / 100.0);
+            progressCircle.setAttribute("stroke-dashoffset", String.valueOf(offset));
+            progressText.setTextContent(percentage + "%");
+        }
+    }
+    
+    /**
+     * Hide loading indicator.
+     */
+    private void hideLoadingIndicator() {
+        var indicator = document.getElementById("loading-indicator");
+        if (indicator != null) {
+            indicator.getParentNode().removeChild(indicator);
+        }
     }
     
     private void updateDisplayForPage(HTMLElement pageSection, int pageNumber) {
